@@ -1,0 +1,35 @@
+#top_bar {
+    -fx-base: #333333;
+}
+
+#tab_panel {
+    -fx-border-color: #333333;
+    -fx-border-width: 2px;
+    -fx-border-radius: 10px;
+    -fx-base: #333333;
+}
+
+#tool_panel {
+    -fx-padding: 10px;
+}
+
+#tool_button {
+
+}
+
+.tab:selected
+{
+    -fx-background-color: orange, grey;
+}
+
+#hidden_splitter {
+    -fx-background-color: null;
+    -fx-padding: 10px;
+}
+#hidden_splitter *.split-pane-divider,
+#hidden_splitter *.vertical-grabber,
+#hidden_splitter *.horizontal-grabber {
+    -fx-background-color: null;
+    -fx-border-color: null;
+    -fx-padding: 5px;
+}
