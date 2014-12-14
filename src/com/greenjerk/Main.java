@@ -280,7 +280,6 @@ public class Main extends Application {
                         }
                     });
                 }
-
                 vbox.getChildren().addAll(text, rb1, rb2);
                 root.getChildren().add(vbox);
 
