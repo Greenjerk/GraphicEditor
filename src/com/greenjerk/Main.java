@@ -16,14 +16,17 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Ellipse;
-import javafx.scene.shape.Line;
-import javafx.scene.shape.Rectangle;
+import com.greenjerk.Ellipse;
+import com.greenjerk.Line;
+import com.greenjerk.Rectangle;
+import javafx.scene.shape.Shape;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import org.apache.commons.lang.SerializationUtils;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,11 +41,12 @@ public class Main extends Application {
 
     private static final String STYLE_CSS = Main.class.getResource("css/style.css").toExternalForm();
 
-    public static final int DOT = 0;
-    public static final int LINE = 1;
-    public static final int RECTANGLE = 2;
-    public static final int ELLIPSE = 3;
-    private Integer type;
+    public static final int LINE = 0;
+    public static final int RECTANGLE = 1;
+    public static final int ELLIPSE = 2;
+//    private Integer type;
+
+    private Shape shape;
 
     private Color currentColor = Color.BLACK;
 
@@ -60,7 +64,7 @@ public class Main extends Application {
 
         // Tools Panel
         final ColorPicker colorPicker = new ColorPicker(Color.BLACK);
-        final Button[] buttons = createButtons(ICON_DOT_48, ICON_LINE_48, ICON_RECT_48, ICON_ELLIPSE_48);
+        final Button[] buttons = createButtons(ICON_LINE_48, ICON_RECT_48, ICON_ELLIPSE_48);
         final Text coloredText = new Text("Color");
         Font font = new Font(18);
         coloredText.setFont(font);
@@ -110,8 +114,30 @@ public class Main extends Application {
             pane.setOnMousePressed(new EventHandler<MouseEvent>() {
                 @Override
                 public void handle(MouseEvent mouseEvent) {
-                    if(type != null && type == LINE) {
-                        Line line = new Line();
+                    Shape cloneShape = (Shape) SerializationUtils.clone((Serializable) shape);
+                    if(cloneShape != null && cloneShape.getClass() == Rectangle.class) {
+                        Rectangle rectangle = (Rectangle) cloneShape;
+                        positionX = mouseEvent.getX();
+                        positionY = mouseEvent.getY();
+                        rectangle.setX(positionX);
+                        rectangle.setY(positionY);
+                        rectangle.setFill(null);
+                        rectangle.setStrokeWidth((4));
+                        rectangle.setStroke(currentColor);
+                        pane.getChildren().add(rectangle);
+                    } else if(cloneShape != null && cloneShape.getClass() == Ellipse.class) {
+                        Ellipse ellipse = (Ellipse) cloneShape;
+                        positionX = mouseEvent.getX();
+                        positionY = mouseEvent.getY();
+                        ellipse.setCenterX(positionX);
+                        ellipse.setCenterY(positionY);
+                        ellipse.setFill(null);
+                        ellipse.setStrokeWidth((4));
+                        ellipse.setStroke(currentColor);
+                        pane.getChildren().add(ellipse);
+                    } else {
+                        Line line = (Line) cloneShape;
+                        assert line != null;
                         line.setStartX(mouseEvent.getX());
                         line.setStartY(mouseEvent.getY());
                         line.setEndX(mouseEvent.getX());
@@ -120,32 +146,6 @@ public class Main extends Application {
                         line.setStroke(currentColor);
                         line.setStrokeWidth(4);
                         pane.getChildren().add(line);
-                    } else if(type != null && type == RECTANGLE) {
-                        positionX = mouseEvent.getX();
-                        positionY = mouseEvent.getY();
-                        Rectangle rectangle = new Rectangle(positionX, positionY, 1, 1);
-                        rectangle.setFill(null);
-                        rectangle.setStrokeWidth((4));
-                        rectangle.setStroke(currentColor);
-                        pane.getChildren().add(rectangle);
-                    } else if(type != null && type == ELLIPSE) {
-                        positionX = mouseEvent.getX();
-                        positionY = mouseEvent.getY();
-                        Ellipse ellipse = new Ellipse(positionX, positionY, 1, 1);
-                        ellipse.setFill(null);
-                        ellipse.setStrokeWidth((4));
-                        ellipse.setStroke(currentColor);
-                        pane.getChildren().add(ellipse);
-                    } else {
-                        Line line = new Line();
-                        line.setStartX(mouseEvent.getX());
-                        line.setStartY(mouseEvent.getY());
-                        line.setEndX(mouseEvent.getX());
-                        line.setEndY(mouseEvent.getY());
-                        line.setFill(null);
-                        line.setStroke(currentColor);
-                        line.setStrokeWidth((4));
-                        pane.getChildren().add(line);
                     }
                 }
             });
@@ -153,11 +153,7 @@ public class Main extends Application {
             pane.setOnMouseDragged(new EventHandler<MouseEvent>() {
                 @Override
                 public void handle(MouseEvent mouseEvent) {
-                    if(type != null && type == LINE) {
-                        Line line = (Line) pane.getChildren().get(pane.getChildren().size() - 1);
-                        line.setEndX(mouseEvent.getX());
-                        line.setEndY(mouseEvent.getY());
-                    } else if(type != null && type == RECTANGLE) {
+                    if(shape != null && shape.getClass() == Rectangle.class) {
                         Rectangle rectangle = (Rectangle) pane.getChildren().get(pane.getChildren().size() - 1);
                         rectangle.setWidth(Math.abs(positionX - mouseEvent.getX()));
                         rectangle.setHeight(Math.abs(positionY - mouseEvent.getY()));
@@ -171,22 +167,16 @@ public class Main extends Application {
                         } else if (positionY - mouseEvent.getY() < 0) {
                             rectangle.setY(mouseEvent.getY() + (positionY - mouseEvent.getY()));
                         }
-                    } else if(type != null && type == ELLIPSE) {
+                    } else if(shape != null && shape.getClass() == Ellipse.class) {
                         Ellipse ellipse = (Ellipse) pane.getChildren().get(pane.getChildren().size() - 1);
                         ellipse.setRadiusX(Math.abs(positionX - mouseEvent.getX()) / 2);
                         ellipse.setRadiusY(Math.abs(positionY - mouseEvent.getY()) / 2);
                         ellipse.setCenterX(mouseEvent.getX() + ((positionX - mouseEvent.getX()) / 2));
                         ellipse.setCenterY(mouseEvent.getY() + ((positionY - mouseEvent.getY()) / 2));
                     } else {
-                        Line line = new Line();
-                        line.setStartX(mouseEvent.getX());
-                        line.setStartY(mouseEvent.getY());
+                        Line line = (Line) pane.getChildren().get(pane.getChildren().size() - 1);
                         line.setEndX(mouseEvent.getX());
                         line.setEndY(mouseEvent.getY());
-                        line.setFill(null);
-                        line.setStroke(currentColor);
-                        line.setStrokeWidth((4));
-                        pane.getChildren().add(line);
                     }
 
                 }
@@ -203,11 +193,17 @@ public class Main extends Application {
             button.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
             button.setId("tool_button");
             button.getStylesheets().add(STYLE_CSS);
-            final Integer finalCount = count;
+            final Integer type = count;
             button.setOnMousePressed(new EventHandler<MouseEvent>() {
                 @Override
                 public void handle(MouseEvent t) {
-                    type = finalCount;
+                    if(type == RECTANGLE) {
+                        shape = new Rectangle();
+                    } else if(type == ELLIPSE) {
+                        shape = new Ellipse();
+                    } else {
+                        shape = new Line();
+                    }
                 }
             });
             buttonList.add(button);
