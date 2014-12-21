@@ -19,7 +19,7 @@ import javafx.scene.paint.Color;
 import com.greenjerk.Ellipse;
 import com.greenjerk.Line;
 import com.greenjerk.Rectangle;
-import javafx.scene.shape.Shape;
+import com.greenjerk.wrap.Shape;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -44,7 +44,6 @@ public class Main extends Application {
     public static final int LINE = 0;
     public static final int RECTANGLE = 1;
     public static final int ELLIPSE = 2;
-//    private Integer type;
 
     private Shape shape;
 
@@ -115,70 +114,18 @@ public class Main extends Application {
                 @Override
                 public void handle(MouseEvent mouseEvent) {
                     Shape cloneShape = (Shape) SerializationUtils.clone((Serializable) shape);
-                    if(cloneShape != null && cloneShape.getClass() == Rectangle.class) {
-                        Rectangle rectangle = (Rectangle) cloneShape;
-                        positionX = mouseEvent.getX();
-                        positionY = mouseEvent.getY();
-                        rectangle.setX(positionX);
-                        rectangle.setY(positionY);
-                        rectangle.setFill(null);
-                        rectangle.setStrokeWidth((4));
-                        rectangle.setStroke(currentColor);
-                        pane.getChildren().add(rectangle);
-                    } else if(cloneShape != null && cloneShape.getClass() == Ellipse.class) {
-                        Ellipse ellipse = (Ellipse) cloneShape;
-                        positionX = mouseEvent.getX();
-                        positionY = mouseEvent.getY();
-                        ellipse.setCenterX(positionX);
-                        ellipse.setCenterY(positionY);
-                        ellipse.setFill(null);
-                        ellipse.setStrokeWidth((4));
-                        ellipse.setStroke(currentColor);
-                        pane.getChildren().add(ellipse);
-                    } else {
-                        Line line = (Line) cloneShape;
-                        assert line != null;
-                        line.setStartX(mouseEvent.getX());
-                        line.setStartY(mouseEvent.getY());
-                        line.setEndX(mouseEvent.getX());
-                        line.setEndY(mouseEvent.getY());
-                        line.setFill(null);
-                        line.setStroke(currentColor);
-                        line.setStrokeWidth(4);
-                        pane.getChildren().add(line);
-                    }
+                    positionX = mouseEvent.getX();
+                    positionY = mouseEvent.getY();
+                    cloneShape.pointInit(mouseEvent.getX(), mouseEvent.getY(), positionX, positionY, currentColor);
+                    pane.getChildren().add(cloneShape);
                 }
             });
 
             pane.setOnMouseDragged(new EventHandler<MouseEvent>() {
                 @Override
                 public void handle(MouseEvent mouseEvent) {
-                    if(shape != null && shape.getClass() == Rectangle.class) {
-                        Rectangle rectangle = (Rectangle) pane.getChildren().get(pane.getChildren().size() - 1);
-                        rectangle.setWidth(Math.abs(positionX - mouseEvent.getX()));
-                        rectangle.setHeight(Math.abs(positionY - mouseEvent.getY()));
-                        rectangle.setX(mouseEvent.getX());
-                        rectangle.setY(mouseEvent.getY());
-                        if (positionX - mouseEvent.getX() < 0 && positionY - mouseEvent.getY() < 0) {
-                            rectangle.setX(mouseEvent.getX() + (positionX - mouseEvent.getX()));
-                            rectangle.setY(mouseEvent.getY() + (positionY - mouseEvent.getY()));
-                        } else if(positionX - mouseEvent.getX() < 0) {
-                            rectangle.setX(mouseEvent.getX() + (positionX - mouseEvent.getX()));
-                        } else if (positionY - mouseEvent.getY() < 0) {
-                            rectangle.setY(mouseEvent.getY() + (positionY - mouseEvent.getY()));
-                        }
-                    } else if(shape != null && shape.getClass() == Ellipse.class) {
-                        Ellipse ellipse = (Ellipse) pane.getChildren().get(pane.getChildren().size() - 1);
-                        ellipse.setRadiusX(Math.abs(positionX - mouseEvent.getX()) / 2);
-                        ellipse.setRadiusY(Math.abs(positionY - mouseEvent.getY()) / 2);
-                        ellipse.setCenterX(mouseEvent.getX() + ((positionX - mouseEvent.getX()) / 2));
-                        ellipse.setCenterY(mouseEvent.getY() + ((positionY - mouseEvent.getY()) / 2));
-                    } else {
-                        Line line = (Line) pane.getChildren().get(pane.getChildren().size() - 1);
-                        line.setEndX(mouseEvent.getX());
-                        line.setEndY(mouseEvent.getY());
-                    }
-
+                    Shape shape = (Shape) pane.getChildren().get(pane.getChildren().size() - 1);
+                    shape.draw(mouseEvent.getX(), mouseEvent.getY(), positionX, positionY);
                 }
             });
         }
